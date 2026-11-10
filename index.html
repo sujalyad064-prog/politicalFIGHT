@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>politicianFIGHT - 3D Fighting Game | Created by Sujal Yadav</title>
+  <meta name="description" content="Complete 3D fighting game featuring 16 parody characters, unique special powers, and 3 rich arenas. Playable in your browser!">
+  <!-- Google Fonts for arcade fighting aesthetics -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&family=Russo+One&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Three.js r128 CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <!-- MAIN APP CONTAINER -->
+  <div id="game-container">
+
+    <!-- 3D CANVAS FOR ARENA BATTLE -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- TOP HEADER / QUICK SETTINGS -->
+    <header id="global-header">
+      <div class="logo-wrapper">
+        <div class="logo-small">politician<span class="accent-text">FIGHT</span></div>
+        <div class="author-tag">by Sujal Yadav</div>
+      </div>
+      <div class="header-actions">
+        <button id="btn-toggle-sound" class="icon-btn" title="Toggle Sound / Music">
+          <span id="sound-icon">🔊</span>
+        </button>
+        <button id="btn-show-controls" class="icon-btn" title="Controls Guide">
+          <span>⌨️ HELP</span>
+        </button>
+        <button id="btn-toggle-fullscreen" class="icon-btn" title="Toggle Fullscreen">
+          <span>⛶</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 1: TITLE & MAIN MENU SCREEN             -->
+    <!-- ============================================== -->
+    <section id="screen-menu" class="screen active">
+      <div class="menu-content">
+        <div class="title-logo-wrapper">
+          <h1 class="game-title">politician<span class="fire-text">FIGHT</span></h1>
+          <p class="game-tagline">THE ULTIMATE 3D PARODY CLASH</p>
+          <div class="title-decor-line"></div>
+        </div>
+
+        <div class="menu-options-card">
+          <div class="mode-select-group">
+            <button id="btn-mode-cpu" class="menu-btn primary-btn active-mode" data-mode="cpu">
+              <span class="btn-icon">🎮</span>
+              <span class="btn-text">1 PLAYER VS CPU</span>
+            </button>
+            <button id="btn-mode-pvp" class="menu-btn secondary-btn" data-mode="pvp">
+              <span class="btn-icon">👥</span>
+              <span class="btn-text">LOCAL 2 PLAYERS</span>
+            </button>
+          </div>
+
+          <div class="difficulty-select-wrapper" id="difficulty-wrapper">
+            <span class="selector-label">CPU DIFFICULTY:</span>
+            <div class="difficulty-pills">
+              <button class="diff-btn" data-diff="easy">EASY</button>
+              <button class="diff-btn active" data-diff="normal">NORMAL</button>
+              <button class="diff-btn" data-diff="hard">HARD</button>
+            </div>
+          </div>
+
+          <button id="btn-start-select" class="action-btn start-pulse">
+            <span>ENTER ARENA</span>
+            <span class="btn-arrow">➔</span>
+          </button>
+        </div>
+
+        <footer class="menu-footer">
+          <div class="creator-badge">Created with <span class="heart-pulse">❤️</span> by <strong class="creator-name">Sujal Yadav</strong></div>
+          <div class="tech-sub">HTML5 &bull; Three.js 3D &bull; Web Audio Synthesizer</div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 2: CHARACTER & ARENA SELECTION          -->
+    <!-- ============================================== -->
+    <section id="screen-select" class="screen">
+      <div class="select-header">
+        <button id="btn-back-to-menu" class="nav-back-btn">&larr; MENU</button>
+        <div class="select-title-banner">
+          <h2 id="select-prompt-text">SELECT YOUR FIGHTER</h2>
+          <div class="turn-indicator" id="turn-indicator">PLAYER 1: CHOOSE</div>
+        </div>
+        <button id="btn-select-random" class="random-badge-btn">🎲 RANDOM</button>
+      </div>
+
+      <div class="select-main-layout">
+        <!-- PLAYER 1 PREVIEW PANEL -->
+        <div class="fighter-preview-card player-1" id="p1-preview-card">
+          <div class="player-tag">PLAYER 1</div>
+          <div class="preview-canvas-box">
+            <canvas id="p1-preview-canvas"></canvas>
+            <div class="model-loading-spinner" id="p1-spinner"></div>
+          </div>
+          <div class="preview-info">
+            <h3 class="char-name" id="p1-char-name">Mitraman</h3>
+            <div class="char-power-badge" id="p1-char-power">⚡ Mitra Chakra</div>
+            <div class="char-stats">
+              <div class="stat-bar"><span class="stat-lbl">ATK</span><div class="bar-fill"><div id="p1-stat-atk" style="width: 85%;"></div></div></div>
+              <div class="stat-bar"><span class="stat-lbl">SPD</span><div class="bar-fill"><div id="p1-stat-spd" style="width: 75%;"></div></div></div>
+              <div class="stat-bar"><span class="stat-lbl">DEF</span><div class="bar-fill"><div id="p1-stat-def" style="width: 80%;"></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CENTER CHARACTER GRID (16 SLOTS) -->
+        <div class="character-grid-container">
+          <div class="grid-title">SELECT FIGHTER</div>
+          <div class="character-grid" id="character-grid">
+            <!-- 16 character items dynamically generated or static for safety -->
+          </div>
+
+          <!-- ARENA SELECTION STRIP -->
+          <div class="arena-picker-strip">
+            <span class="arena-label">BATTLE ARENA:</span>
+            <div class="arena-tabs" id="arena-tabs">
+              <button class="arena-tab active" data-arena="sansad">
+                <span class="arena-icon">🏛️</span>
+                <span class="arena-name">Sansad</span>
+              </button>
+              <button class="arena-tab" data-arena="jantar">
+                <span class="arena-icon">🪐</span>
+                <span class="arena-name">Jantar Mantar</span>
+              </button>
+              <button class="arena-tab" data-arena="sadak">
+                <span class="arena-icon">🛣️</span>
+                <span class="arena-name">Desi Sadak</span>
+              </button>
+            </div>
+          </div>
+
+          <button id="btn-confirm-selection" class="action-btn confirm-btn disabled">
+            <span>LOCK IN &amp; FIGHT!</span>
+          </button>
+        </div>
+
+        <!-- PLAYER 2 / CPU PREVIEW PANEL -->
+        <div class="fighter-preview-card player-2" id="p2-preview-card">
+          <div class="player-tag" id="p2-tag-label">CPU</div>
+          <div class="preview-canvas-box">
+            <canvas id="p2-preview-canvas"></canvas>
+            <div class="model-loading-spinner" id="p2-spinner"></div>
+          </div>
+          <div class="preview-info">
+            <h3 class="char-name" id="p2-char-name">Yatra Boy</h3>
+            <div class="char-power-badge" id="p2-char-power">⚡ Aloo Se Sona</div>
+            <div class="char-stats">
+              <div class="stat-bar"><span class="stat-lbl">ATK</span><div class="bar-fill"><div id="p2-stat-atk" style="width: 75%;"></div></div></div>
+              <div class="stat-bar"><span class="stat-lbl">SPD</span><div class="bar-fill"><div id="p2-stat-spd" style="width: 85%;"></div></div></div>
+              <div class="stat-bar"><span class="stat-lbl">DEF</span><div class="bar-fill"><div id="p2-stat-def" style="width: 70%;"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 3: CINEMATIC VS MATCHUP SCREEN          -->
+    <!-- ============================================== -->
+    <section id="screen-vs" class="screen">
+      <div class="vs-background-fx"></div>
+      <div class="vs-container">
+        <!-- P1 VS Side -->
+        <div class="vs-fighter-column left-fighter">
+          <div class="vs-avatar-circle" id="vs-p1-avatar">🇮🇳</div>
+          <h2 class="vs-char-name" id="vs-p1-name">MITRAMAN</h2>
+          <div class="vs-special-power" id="vs-p1-power">SUPER: MITRA CHAKRA</div>
+          <span class="vs-player-badge">PLAYER 1</span>
+        </div>
+
+        <!-- Center VS Badge -->
+        <div class="vs-center-emblem">
+          <div class="vs-text-3d">VS</div>
+          <div class="vs-stage-name" id="vs-arena-label">ARENA: SANSAD</div>
+          <div class="vs-countdown-circle">FIGHT!</div>
+        </div>
+
+        <!-- P2 VS Side -->
+        <div class="vs-fighter-column right-fighter">
+          <div class="vs-avatar-circle" id="vs-p2-avatar">🌾</div>
+          <h2 class="vs-char-name" id="vs-p2-name">YATRA BOY</h2>
+          <div class="vs-special-power" id="vs-p2-power">SUPER: ALOO SE SONA</div>
+          <span class="vs-player-badge" id="vs-p2-badge">CPU</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SCREEN 4: IN-GAME FIGHTING BATTLE HUD          -->
+    <!-- ============================================== -->
+    <section id="screen-battle" class="screen">
+      <!-- TOP FIGHTER STATUS BARS -->
+      <div id="battle-hud">
+        <!-- PLAYER 1 HUD -->
+        <div class="hud-fighter p1-hud">
+          <div class="fighter-portrait-box" id="p1-hud-avatar">🇮🇳</div>
+          <div class="bars-container">
+            <div class="fighter-info-row">
+              <span class="hud-name" id="hud-p1-name">MITRAMAN</span>
+              <div class="round-win-indicators" id="p1-rounds">
+                <span class="round-dot"></span>
+                <span class="round-dot"></span>
+              </div>
+            </div>
+            <!-- Health Bar -->
+            <div class="health-bar-frame">
+              <div class="health-ghost" id="p1-health-ghost"></div>
+              <div class="health-fill" id="p1-health-fill" style="width: 100%;"></div>
+            </div>
+            <!-- Super Meter -->
+            <div class="super-bar-frame">
+              <div class="super-fill" id="p1-super-fill" style="width: 0%;"></div>
+              <span class="super-label" id="p1-super-label">SUPER 0%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CENTER MATCH CLOCK & ROUND BANNER -->
+        <div class="hud-center">
+          <div class="timer-box">
+            <span id="match-timer">99</span>
+          </div>
+          <div class="current-round-text" id="round-indicator">ROUND 1</div>
+        </div>
+
+        <!-- PLAYER 2 HUD -->
+        <div class="hud-fighter p2-hud">
+          <div class="fighter-portrait-box" id="p2-hud-avatar">🌾</div>
+          <div class="bars-container">
+            <div class="fighter-info-row">
+              <div class="round-win-indicators" id="p2-rounds">
+                <span class="round-dot"></span>
+                <span class="round-dot"></span>
+              </div>
+              <span class="hud-name" id="hud-p2-name">YATRA BOY</span>
+            </div>
+            <!-- Health Bar -->
+            <div class="health-bar-frame">
+              <div class="health-ghost" id="p2-health-ghost"></div>
+              <div class="health-fill" id="p2-health-fill" style="width: 100%;"></div>
+            </div>
+            <!-- Super Meter -->
+            <div class="super-bar-frame">
+              <div class="super-fill" id="p2-super-fill" style="width: 0%;"></div>
+              <span class="super-label" id="p2-super-label">SUPER 0%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMBO COUNTER POPUPS -->
+      <div class="combo-counter-box left-combo" id="p1-combo-box">
+        <div class="combo-count" id="p1-combo-count">3 HITS!</div>
+        <div class="combo-damage" id="p1-combo-damage">DAMAGE 21%</div>
+      </div>
+      <div class="combo-counter-box right-combo" id="p2-combo-box">
+        <div class="combo-count" id="p2-combo-count">4 HITS!</div>
+        <div class="combo-damage" id="p2-combo-damage">DAMAGE 28%</div>
+      </div>
+
+      <!-- DYNAMIC MID-SCREEN ANNOUNCEMENTS -->
+      <div id="announcement-overlay">
+        <div id="announcement-text" class="banner-text">ROUND 1</div>
+      </div>
+
+      <!-- IN-GAME PAUSE BUTTON -->
+      <button id="btn-pause" class="hud-pause-btn" title="Pause Game">⏸</button>
+
+      <!-- ============================================== -->
+      <!-- MOBILE ON-SCREEN VIRTUAL CONTROLS              -->
+      <!-- ============================================== -->
+      <div id="mobile-controls">
+        <!-- D-PAD / DIRECTIONAL BUTTONS -->
+        <div class="mobile-dpad">
+          <div class="dpad-row">
+            <button class="m-btn d-btn" id="m-up" data-key="w">▲<span class="m-lbl">JUMP</span></button>
+          </div>
+          <div class="dpad-row dpad-mid">
+            <button class="m-btn d-btn" id="m-left" data-key="a">◄</button>
+            <div class="dpad-center"></div>
+            <button class="m-btn d-btn" id="m-right" data-key="d">►</button>
+          </div>
+          <div class="dpad-row">
+            <button class="m-btn d-btn" id="m-down" data-key="s">▼<span class="m-lbl">CROUCH</span></button>
+          </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="mobile-actions">
+          <div class="action-row top-row">
+            <button class="m-btn act-btn btn-block" id="m-block" data-key="f">
+              <span class="btn-letter">🛡️</span>
+              <span class="btn-action-name">BLOCK</span>
+            </button>
+            <button class="m-btn act-btn btn-super" id="m-super" data-key="u">
+              <span class="btn-letter">⚡</span>
+              <span class="btn-action-name">SUPER</span>
+            </button>
+          </div>
+          <div class="action-row bottom-row">
+            <button class="m-btn act-btn btn-grab" id="m-grab" data-key="l">
+              <span class="btn-letter">✋</span>
+              <span class="btn-action-name">GRAB</span>
+            </button>
+            <button class="m-btn act-btn btn-punch" id="m-punch" data-key="j">
+              <span class="btn-letter">👊</span>
+              <span class="btn-action-name">PUNCH</span>
+            </button>
+            <button class="m-btn act-btn btn-kick" id="m-kick" data-key="k">
+              <span class="btn-letter">🦶</span>
+              <span class="btn-action-name">KICK</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- PAUSE MENU MODAL                               -->
+    <!-- ============================================== -->
+    <div id="modal-pause" class="game-modal">
+      <div class="modal-card">
+        <h2 class="modal-title">GAME PAUSED</h2>
+        <div class="modal-btn-list">
+          <button id="btn-resume-game" class="modal-action-btn primary">RESUME FIGHT</button>
+          <button id="btn-restart-round" class="modal-action-btn">RESTART MATCH</button>
+          <button id="btn-pause-select" class="modal-action-btn">CHARACTER SELECT</button>
+          <button id="btn-pause-menu" class="modal-action-btn danger">MAIN MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MATCH END / VICTORY OVERLAY                    -->
+    <!-- ============================================== -->
+    <div id="modal-gameover" class="game-modal">
+      <div class="modal-card victory-card">
+        <div class="trophy-icon">🏆</div>
+        <h2 class="victory-title" id="victory-header">PLAYER 1 WINS!</h2>
+        <p class="victory-subtitle" id="victory-subtext">TOTAL DOMINATION</p>
+        <div class="winner-portrait-showcase" id="victory-avatar">🇮🇳</div>
+        <div class="modal-btn-list">
+          <button id="btn-rematch" class="modal-action-btn primary">PLAY AGAIN (REMATCH)</button>
+          <button id="btn-gameover-select" class="modal-action-btn">CHANGE FIGHTERS</button>
+          <button id="btn-gameover-menu" class="modal-action-btn danger">EXIT TO TITLE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- CONTROLS & HOW TO PLAY MODAL                   -->
+    <!-- ============================================== -->
+    <div id="modal-controls" class="game-modal">
+      <div class="modal-card controls-card">
+        <div class="modal-head">
+          <h2 class="modal-title">politicianFIGHT CONTROLS</h2>
+          <button id="btn-close-controls" class="modal-close-btn">&times;</button>
+        </div>
+        
+        <div class="controls-content-grid">
+          <!-- Player 1 Keyboard -->
+          <div class="control-box">
+            <h3 class="box-title p1-color">PLAYER 1 (KEYBOARD)</h3>
+            <ul class="control-list">
+              <li><kbd>A</kbd> / <kbd>D</kbd> : Move Left / Right</li>
+              <li><kbd>W</kbd> : Jump</li>
+              <li><kbd>S</kbd> : Crouch</li>
+              <li><kbd>F</kbd> : Block</li>
+              <li><kbd>J</kbd> : Punch</li>
+              <li><kbd>K</kbd> : Kick</li>
+              <li><kbd>L</kbd> : Grab (Unblockable!)</li>
+              <li><kbd>U</kbd> : Super Attack (100% Meter)</li>
+            </ul>
+          </div>
+
+          <!-- Player 2 Keyboard -->
+          <div class="control-box">
+            <h3 class="box-title p2-color">PLAYER 2 (LOCAL 2P)</h3>
+            <ul class="control-list">
+              <li><kbd>◀</kbd> / <kbd>▶</kbd> : Move Left / Right</li>
+              <li><kbd>▲</kbd> : Jump</li>
+              <li><kbd>▼</kbd> : Crouch</li>
+              <li><kbd>5</kbd> : Block</li>
+              <li><kbd>1</kbd> : Punch</li>
+              <li><kbd>2</kbd> : Kick</li>
+              <li><kbd>4</kbd> : Grab</li>
+              <li><kbd>3</kbd> : Super Attack</li>
+            </ul>
+          </div>
+
+          <!-- Mobile Touch Controls -->
+          <div class="control-box full-width">
+            <h3 class="box-title touch-color">MOBILE &amp; TOUCH SCREENS</h3>
+            <p class="control-desc">
+              On touchscreens and phones, intuitive on-screen buttons automatically appear:
+              <br>• <strong>D-Pad</strong> for Left, Right, Jump and Crouch.
+              <br>• <strong>Action Buttons</strong> for Punch, Kick, Grab, Block and Super.
+            </p>
+          </div>
+        </div>
+
+        <button id="btn-dismiss-controls" class="modal-action-btn primary full-w">GOT IT, LET'S BRAWL!</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Game Logic Script -->
+  <script src="script.js"></script>
+</body>
+</html>
